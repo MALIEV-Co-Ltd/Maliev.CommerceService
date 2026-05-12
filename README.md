@@ -6,6 +6,10 @@ Storefront commerce service for MALIEV public web properties.
 
 `Maliev.CommerceService` owns e-commerce catalog, carts, checkout sessions, and shop orders for MALIEV products, SimMount products, spare parts, pneumatic injection molding machines, and 3D printed products. It does not own manufacturing project quotes or custom manufacturing orders; those remain in `Maliev.QuoteEngine`, `Maliev.ProjectService`, and manufacturing order services.
 
+## Starter Catalog Data
+
+On startup the service seeds draft starter listings for the MALIEV pneumatic injection molding machine 30g and 50g lineup. These records are intentionally draft data for employees to refine in `Maliev.Intranet`; they are not treated as a final Shopify import and are not shown by anonymous product listing APIs until published.
+
 ## Customer Boundary
 
 All authenticated commerce records reference the canonical `CustomerId` from `Maliev.CustomerService`. Commerce does not create or store duplicate customer profiles.

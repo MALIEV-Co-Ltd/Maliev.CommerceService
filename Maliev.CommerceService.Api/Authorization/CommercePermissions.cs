@@ -46,7 +46,4 @@ public static class CommercePermissions
 
     /// <summary>Create orders.</summary>
     public const string OrdersCreate = "commerce.orders.create";
-
-    /// <summary>Create imports.</summary>
-    public const string ImportsCreate = "commerce.imports.create";
 }

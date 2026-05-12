@@ -3,7 +3,6 @@ using Maliev.CommerceService.Application.Interfaces;
 using Maliev.CommerceService.Application.Services;
 using Maliev.CommerceService.Infrastructure.Persistence;
 using Maliev.CommerceService.Infrastructure.Repositories;
-using Maliev.CommerceService.Infrastructure.Shopify;
 
 using ApplicationCommerceService = Maliev.CommerceService.Application.Services.CommerceService;
 
@@ -34,7 +33,6 @@ try
 
     builder.Services.AddScoped<ICommerceRepository, CommerceRepository>();
     builder.Services.AddScoped<ICommerceService, ApplicationCommerceService>();
-    builder.Services.AddShopifyCatalogImport(builder.Configuration);
     builder.Services.AddControllers();
     builder.AddStandardRateLimiting();
     builder.AddIAMServiceClient("commerce");
@@ -43,6 +41,7 @@ try
     ILogger<Program> logger = app.Services.GetRequiredService<ILogger<Program>>();
 
     await app.MigrateDatabaseAsync<CommerceDbContext>();
+    await CommerceCatalogSeeder.SeedStarterCatalogAsync(app.Services, app.Lifetime.ApplicationStopping);
 
     app.UseStandardMiddleware();
     if (!app.Environment.IsDevelopment())

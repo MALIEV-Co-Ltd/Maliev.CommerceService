@@ -84,58 +84,6 @@ public sealed record StoreOrderResponse(Guid Id, string OrderNumber, Guid Custom
 public sealed record StoreOrderLineResponse(Guid Id, Guid ProductVariantId, string Sku, string Title, int Quantity, decimal UnitPriceAmount, string Currency, decimal LineTotal);
 
 /// <summary>
-/// Request for importing the storefront catalog from Shopify.
-/// </summary>
-public sealed class ShopifyCatalogImportRequest
-{
-    /// <summary>Gets or sets whether the import should only report what would change.</summary>
-    public bool DryRun { get; set; }
-
-    /// <summary>Gets or sets the Shopify page size.</summary>
-    [Range(1, 100)]
-    public int PageSize { get; set; } = 50;
-
-    /// <summary>Gets or sets an optional Shopify product search query.</summary>
-    [MaxLength(500)]
-    public string? SearchQuery { get; set; }
-
-    /// <summary>Gets or sets allowed product handles. Empty imports all handles returned by Shopify.</summary>
-    public List<string> ProductHandles { get; set; } = [];
-
-    /// <summary>Gets or sets allowed product type fragments. Empty imports all product types returned by Shopify.</summary>
-    public List<string> ProductTypes { get; set; } = [];
-
-    /// <summary>Gets or sets required tag fragments. Empty imports all tags returned by Shopify.</summary>
-    public List<string> Tags { get; set; } = [];
-
-    /// <summary>Gets or sets allowed collection handles. Empty imports all returned collections.</summary>
-    public List<string> CollectionHandles { get; set; } = [];
-
-    /// <summary>Gets or sets keyword fragments matched against title, handle, type, tags, and collection handles.</summary>
-    public List<string> Keywords { get; set; } = [];
-
-    /// <summary>Gets or sets a Commerce collection handle that should always be linked to imported products.</summary>
-    [MaxLength(160)]
-    public string? EnsureCollectionHandle { get; set; }
-
-    /// <summary>Gets or sets the title for the ensured Commerce collection.</summary>
-    [MaxLength(200)]
-    public string? EnsureCollectionTitle { get; set; }
-}
-
-/// <summary>
-/// Result of a Shopify catalog import.
-/// </summary>
-public sealed record ShopifyCatalogImportResponse(
-    int ProductsRead,
-    int ProductsCreated,
-    int ProductsUpdated,
-    int ProductsSkipped,
-    int CollectionsCreated,
-    bool DryRun,
-    IReadOnlyList<string> Warnings);
-
-/// <summary>
 /// Product creation request.
 /// </summary>
 public class CreateProductRequest
