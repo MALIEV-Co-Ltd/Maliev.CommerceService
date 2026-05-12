@@ -1,0 +1,22 @@
+name: CI - Develop
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Restore
+        run: dotnet restore Maliev.CommerceService.slnx
+      - name: Build
+        run: dotnet build Maliev.CommerceService.slnx --configuration Release --no-restore
+      - name: Test
+        run: dotnet test Maliev.CommerceService.slnx --configuration Release --no-build --verbosity normal
