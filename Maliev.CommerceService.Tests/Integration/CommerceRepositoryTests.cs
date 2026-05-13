@@ -103,6 +103,87 @@ public sealed class CommerceRepositoryTests(PostgreSqlFixture fixture) : IClassF
     }
 
     [Fact]
+    public async Task UpdateProductAsync_WhenReplacingVariantSku_PersistsUpdatedVariant()
+    {
+        await using var setupDbContext = fixture.CreateDbContext();
+        await setupDbContext.Database.EnsureCreatedAsync();
+
+        var suffix = Guid.NewGuid().ToString("N")[..8];
+        var createService = new CommerceApplicationService(new CommerceRepository(setupDbContext));
+        var created = await createService.CreateProductAsync(new CreateProductRequest
+        {
+            Handle = $"e2e-sku-replacement-{suffix}",
+            Title = "SKU Replacement Product",
+            Brand = "MALIEV",
+            Summary = "Initial summary",
+            Description = "Initial description",
+            ProductType = "Machine",
+            Status = ProductStatus.Draft,
+            Variants =
+            [
+                new CreateProductVariantRequest
+                {
+                    Sku = $"E2E-SKU-OLD-{suffix}",
+                    Title = "Default",
+                    PriceAmount = 12345.67m,
+                    Currency = "THB",
+                    InventoryQuantity = 7
+                }
+            ],
+            Media =
+            [
+                new CreateProductMediaRequest
+                {
+                    Url = "https://example.com/original.png",
+                    AltText = "Original image",
+                    SortOrder = 0
+                }
+            ]
+        }, CancellationToken.None);
+
+        await using var updateDbContext = fixture.CreateDbContext();
+        var updateService = new CommerceApplicationService(new CommerceRepository(updateDbContext));
+
+        var updated = await updateService.UpdateProductAsync(created.Id, new UpdateProductRequest
+        {
+            Handle = created.Handle,
+            Title = "SKU Replacement Product Updated",
+            Brand = "MALIEV",
+            Summary = "Updated summary",
+            Description = "Updated description",
+            ProductType = "Machine",
+            Status = ProductStatus.Published,
+            Variants =
+            [
+                new CreateProductVariantRequest
+                {
+                    Sku = $"E2E-SKU-NEW-{suffix}",
+                    Title = "Updated default",
+                    PriceAmount = 23456.78m,
+                    Currency = "THB",
+                    InventoryQuantity = 9
+                }
+            ],
+            Media =
+            [
+                new CreateProductMediaRequest
+                {
+                    Url = "https://example.com/updated.png",
+                    AltText = "Updated image",
+                    SortOrder = 0
+                }
+            ]
+        }, CancellationToken.None);
+
+        Assert.NotNull(updated);
+        var variant = Assert.Single(updated.Variants);
+        Assert.Equal(created.Variants.Single().Id, variant.Id);
+        Assert.Equal($"E2E-SKU-NEW-{suffix}", variant.Sku);
+        Assert.Equal(23456.78m, variant.PriceAmount);
+        Assert.Equal(9, variant.InventoryQuantity);
+    }
+
+    [Fact]
     public async Task Repository_PersistsProductCartCheckoutAndStoreOrder()
     {
         await using var dbContext = fixture.CreateDbContext();

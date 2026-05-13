@@ -391,36 +391,60 @@ public sealed class CommerceService(ICommerceRepository repository) : ICommerceS
 
     private void SyncVariants(Product product, IEnumerable<CreateProductVariantRequest> variantRequests)
     {
+        var requests = variantRequests.ToList();
+        var existingVariants = product.Variants.ToList();
         var requestedSkus = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var matchedVariantIds = new HashSet<Guid>();
+        var matchedVariants = new ProductVariant?[requests.Count];
 
-        foreach (var variantRequest in variantRequests)
+        for (var index = 0; index < requests.Count; index++)
         {
+            var variantRequest = requests[index];
             var sku = variantRequest.Sku.Trim();
             if (!requestedSkus.Add(sku))
             {
                 throw new InvalidOperationException($"Duplicate variant SKU '{sku}'.");
             }
 
-            var existing = product.Variants.FirstOrDefault(variant =>
+            var existing = existingVariants.FirstOrDefault(variant =>
+                !matchedVariantIds.Contains(variant.Id) &&
                 string.Equals(variant.Sku, sku, StringComparison.OrdinalIgnoreCase));
-
-            if (existing is null)
+            if (existing is not null)
             {
-                product.Variants.Add(CreateVariant(product.Id, variantRequest));
+                matchedVariants[index] = existing;
+                matchedVariantIds.Add(existing.Id);
+            }
+        }
+
+        for (var index = 0; index < requests.Count; index++)
+        {
+            var variant = matchedVariants[index];
+            if (variant is null && index < existingVariants.Count && !matchedVariantIds.Contains(existingVariants[index].Id))
+            {
+                variant = existingVariants[index];
+            }
+
+            variant ??= existingVariants.FirstOrDefault(existing => !matchedVariantIds.Contains(existing.Id));
+
+            if (variant is null)
+            {
+                product.Variants.Add(CreateVariant(product.Id, requests[index]));
                 continue;
             }
 
-            ApplyVariant(existing, variantRequest);
+            matchedVariantIds.Add(variant.Id);
+            ApplyVariant(variant, requests[index]);
         }
 
-        var variantsToRemove = product.Variants
-            .Where(variant => !requestedSkus.Contains(variant.Sku))
+        var variantsToRemove = existingVariants
+            .Where(variant => !matchedVariantIds.Contains(variant.Id))
             .ToList();
-        _repository.RemoveProductVariants(variantsToRemove);
         foreach (var variant in variantsToRemove)
         {
             product.Variants.Remove(variant);
         }
+
+        _repository.RemoveProductVariants(variantsToRemove);
     }
 
     private static ProductVariant CreateVariant(Guid productId, CreateProductVariantRequest request)
@@ -468,11 +492,12 @@ public sealed class CommerceService(ICommerceRepository repository) : ICommerceS
         var mediaToRemove = existingMedia
             .Skip(requests.Count)
             .ToList();
-        _repository.RemoveProductMedia(mediaToRemove);
         foreach (var media in mediaToRemove)
         {
             product.Media.Remove(media);
         }
+
+        _repository.RemoveProductMedia(mediaToRemove);
     }
 
     private static ProductMedia CreateMedia(Guid productId, CreateProductMediaRequest request)
@@ -528,11 +553,12 @@ public sealed class CommerceService(ICommerceRepository repository) : ICommerceS
         var linksToRemove = product.ProductCollections
             .Where(link => link.Collection is null || !requestedHandleSet.Contains(link.Collection.Handle))
             .ToList();
-        _repository.RemoveProductCollections(linksToRemove);
         foreach (var link in linksToRemove)
         {
             product.ProductCollections.Remove(link);
         }
+
+        _repository.RemoveProductCollections(linksToRemove);
 
         var existingHandles = product.ProductCollections
             .Where(link => link.Collection is not null)
