@@ -44,11 +44,10 @@ public sealed class CommerceService(ICommerceRepository repository) : ICommerceS
             return null;
         }
 
-        product.Variants.Clear();
-        product.Media.Clear();
-        product.ProductCollections.Clear();
-        BuildProduct(request, product);
-        await LinkCollectionsAsync(product, request.CollectionHandles, cancellationToken);
+        ApplyProductBasics(request, product);
+        SyncVariants(product, request.Variants);
+        SyncMedia(product, request.Media);
+        await SyncCollectionsAsync(product, request.CollectionHandles, cancellationToken);
         product.UpdatedAtUtc = DateTimeOffset.UtcNow;
         await _repository.SaveChangesAsync(cancellationToken);
         return product.ToResponse();
@@ -364,6 +363,23 @@ public sealed class CommerceService(ICommerceRepository repository) : ICommerceS
 
     private static Product BuildProduct(CreateProductRequest request, Product product)
     {
+        ApplyProductBasics(request, product);
+
+        foreach (var variantRequest in request.Variants)
+        {
+            product.Variants.Add(CreateVariant(product.Id, variantRequest));
+        }
+
+        foreach (var mediaRequest in request.Media)
+        {
+            product.Media.Add(CreateMedia(product.Id, mediaRequest));
+        }
+
+        return product;
+    }
+
+    private static void ApplyProductBasics(CreateProductRequest request, Product product)
+    {
         product.Handle = NormalizeHandle(request.Handle);
         product.Title = request.Title.Trim();
         product.Brand = string.IsNullOrWhiteSpace(request.Brand) ? null : request.Brand.Trim();
@@ -371,36 +387,111 @@ public sealed class CommerceService(ICommerceRepository repository) : ICommerceS
         product.Description = request.Description.Trim();
         product.ProductType = request.ProductType.Trim();
         product.Status = NormalizeProductStatus(request.Status);
+    }
 
-        foreach (var variantRequest in request.Variants)
+    private void SyncVariants(Product product, IEnumerable<CreateProductVariantRequest> variantRequests)
+    {
+        var requestedSkus = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var variantRequest in variantRequests)
         {
-            product.Variants.Add(new ProductVariant
+            var sku = variantRequest.Sku.Trim();
+            if (!requestedSkus.Add(sku))
             {
-                Id = Guid.NewGuid(),
-                ProductId = product.Id,
-                Sku = variantRequest.Sku.Trim(),
-                Title = variantRequest.Title.Trim(),
-                PriceAmount = decimal.Round(variantRequest.PriceAmount, 2, MidpointRounding.AwayFromZero),
-                Currency = NormalizeCurrency(variantRequest.Currency),
-                InventoryQuantity = variantRequest.InventoryQuantity,
-                IsActive = true,
-                OptionValuesJson = variantRequest.OptionValuesJson
-            });
+                throw new InvalidOperationException($"Duplicate variant SKU '{sku}'.");
+            }
+
+            var existing = product.Variants.FirstOrDefault(variant =>
+                string.Equals(variant.Sku, sku, StringComparison.OrdinalIgnoreCase));
+
+            if (existing is null)
+            {
+                product.Variants.Add(CreateVariant(product.Id, variantRequest));
+                continue;
+            }
+
+            ApplyVariant(existing, variantRequest);
         }
 
-        foreach (var mediaRequest in request.Media)
+        var variantsToRemove = product.Variants
+            .Where(variant => !requestedSkus.Contains(variant.Sku))
+            .ToList();
+        _repository.RemoveProductVariants(variantsToRemove);
+        foreach (var variant in variantsToRemove)
         {
-            product.Media.Add(new ProductMedia
+            product.Variants.Remove(variant);
+        }
+    }
+
+    private static ProductVariant CreateVariant(Guid productId, CreateProductVariantRequest request)
+    {
+        var variant = new ProductVariant
+        {
+            Id = Guid.NewGuid(),
+            ProductId = productId
+        };
+
+        ApplyVariant(variant, request);
+        return variant;
+    }
+
+    private static void ApplyVariant(ProductVariant variant, CreateProductVariantRequest request)
+    {
+        variant.Sku = request.Sku.Trim();
+        variant.Title = request.Title.Trim();
+        variant.PriceAmount = decimal.Round(request.PriceAmount, 2, MidpointRounding.AwayFromZero);
+        variant.Currency = NormalizeCurrency(request.Currency);
+        variant.InventoryQuantity = request.InventoryQuantity;
+        variant.IsActive = true;
+        variant.OptionValuesJson = request.OptionValuesJson;
+    }
+
+    private void SyncMedia(Product product, IEnumerable<CreateProductMediaRequest> mediaRequests)
+    {
+        var requests = mediaRequests.ToList();
+        var existingMedia = product.Media
+            .OrderBy(media => media.SortOrder)
+            .ThenBy(media => media.Id)
+            .ToList();
+
+        for (var index = 0; index < requests.Count; index++)
+        {
+            if (index < existingMedia.Count)
             {
-                Id = Guid.NewGuid(),
-                ProductId = product.Id,
-                Url = mediaRequest.Url.Trim(),
-                AltText = string.IsNullOrWhiteSpace(mediaRequest.AltText) ? null : mediaRequest.AltText.Trim(),
-                SortOrder = mediaRequest.SortOrder
-            });
+                ApplyMedia(existingMedia[index], requests[index]);
+                continue;
+            }
+
+            product.Media.Add(CreateMedia(product.Id, requests[index]));
         }
 
-        return product;
+        var mediaToRemove = existingMedia
+            .Skip(requests.Count)
+            .ToList();
+        _repository.RemoveProductMedia(mediaToRemove);
+        foreach (var media in mediaToRemove)
+        {
+            product.Media.Remove(media);
+        }
+    }
+
+    private static ProductMedia CreateMedia(Guid productId, CreateProductMediaRequest request)
+    {
+        var media = new ProductMedia
+        {
+            Id = Guid.NewGuid(),
+            ProductId = productId
+        };
+
+        ApplyMedia(media, request);
+        return media;
+    }
+
+    private static void ApplyMedia(ProductMedia media, CreateProductMediaRequest request)
+    {
+        media.Url = request.Url.Trim();
+        media.AltText = string.IsNullOrWhiteSpace(request.AltText) ? null : request.AltText.Trim();
+        media.SortOrder = request.SortOrder;
     }
 
     private async Task LinkCollectionsAsync(Product product, IEnumerable<string> handles, CancellationToken cancellationToken)
@@ -409,6 +500,53 @@ public sealed class CommerceService(ICommerceRepository repository) : ICommerceS
         foreach (var rawHandle in handles.Where(handle => !string.IsNullOrWhiteSpace(handle)).Distinct(StringComparer.OrdinalIgnoreCase))
         {
             var handle = NormalizeHandle(rawHandle);
+            var collection = await _repository.GetCollectionByHandleAsync(handle, cancellationToken);
+            if (collection is null)
+            {
+                continue;
+            }
+
+            product.ProductCollections.Add(new ProductCollection
+            {
+                ProductId = product.Id,
+                CollectionId = collection.Id,
+                Collection = collection,
+                SortOrder = sortOrder++
+            });
+        }
+    }
+
+    private async Task SyncCollectionsAsync(Product product, IEnumerable<string> handles, CancellationToken cancellationToken)
+    {
+        var requestedHandles = handles
+            .Where(handle => !string.IsNullOrWhiteSpace(handle))
+            .Select(NormalizeHandle)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var requestedHandleSet = requestedHandles.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var linksToRemove = product.ProductCollections
+            .Where(link => link.Collection is null || !requestedHandleSet.Contains(link.Collection.Handle))
+            .ToList();
+        _repository.RemoveProductCollections(linksToRemove);
+        foreach (var link in linksToRemove)
+        {
+            product.ProductCollections.Remove(link);
+        }
+
+        var existingHandles = product.ProductCollections
+            .Where(link => link.Collection is not null)
+            .Select(link => link.Collection!.Handle)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var sortOrder = product.ProductCollections.Count;
+        foreach (var handle in requestedHandles)
+        {
+            if (existingHandles.Contains(handle))
+            {
+                continue;
+            }
+
             var collection = await _repository.GetCollectionByHandleAsync(handle, cancellationToken);
             if (collection is null)
             {

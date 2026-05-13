@@ -19,6 +19,15 @@ public interface ICommerceRepository
     /// <summary>Adds a product.</summary>
     Task AddProductAsync(Product product, CancellationToken cancellationToken);
 
+    /// <summary>Removes product variants.</summary>
+    void RemoveProductVariants(IEnumerable<ProductVariant> variants);
+
+    /// <summary>Removes product media.</summary>
+    void RemoveProductMedia(IEnumerable<ProductMedia> media);
+
+    /// <summary>Removes product collection links.</summary>
+    void RemoveProductCollections(IEnumerable<ProductCollection> links);
+
     /// <summary>Lists collections.</summary>
     Task<IReadOnlyList<Collection>> ListCollectionsAsync(bool includeUnpublished, CancellationToken cancellationToken);
 

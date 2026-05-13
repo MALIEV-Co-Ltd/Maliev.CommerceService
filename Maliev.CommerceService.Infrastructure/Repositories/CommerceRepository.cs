@@ -80,6 +80,24 @@ public sealed class CommerceRepository(CommerceDbContext dbContext) : ICommerceR
     }
 
     /// <inheritdoc />
+    public void RemoveProductVariants(IEnumerable<ProductVariant> variants)
+    {
+        _dbContext.ProductVariants.RemoveRange(variants);
+    }
+
+    /// <inheritdoc />
+    public void RemoveProductMedia(IEnumerable<ProductMedia> media)
+    {
+        _dbContext.ProductMedia.RemoveRange(media);
+    }
+
+    /// <inheritdoc />
+    public void RemoveProductCollections(IEnumerable<ProductCollection> links)
+    {
+        _dbContext.ProductCollections.RemoveRange(links);
+    }
+
+    /// <inheritdoc />
     public async Task<IReadOnlyList<Collection>> ListCollectionsAsync(bool includeUnpublished, CancellationToken cancellationToken)
     {
         var query = _dbContext.Collections.AsNoTracking().AsQueryable();
