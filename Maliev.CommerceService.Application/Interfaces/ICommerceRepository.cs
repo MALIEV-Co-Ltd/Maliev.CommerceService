@@ -49,6 +49,9 @@ public interface ICommerceRepository
     /// <summary>Gets a cart by id.</summary>
     Task<Cart?> GetCartAsync(Guid id, CancellationToken cancellationToken);
 
+    /// <summary>Adds a cart line.</summary>
+    void AddCartLine(CartLine line);
+
     /// <summary>Adds a checkout session.</summary>
     Task AddCheckoutSessionAsync(CheckoutSession checkoutSession, CancellationToken cancellationToken);
 

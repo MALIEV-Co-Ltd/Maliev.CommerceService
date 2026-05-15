@@ -213,9 +213,10 @@ public sealed class CommerceService(ICommerceRepository repository) : ICommerceS
             {
                 Id = Guid.NewGuid(),
                 CartId = cart.Id,
-                ProductVariantId = variant.Id
+                ProductVariantId = variant.Id,
+                Cart = cart
             };
-            cart.Lines.Add(line);
+            _repository.AddCartLine(line);
         }
 
         line.Quantity = request.Quantity;

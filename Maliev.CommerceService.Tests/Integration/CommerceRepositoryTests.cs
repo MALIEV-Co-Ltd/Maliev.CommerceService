@@ -281,4 +281,67 @@ public sealed class CommerceRepositoryTests(PostgreSqlFixture fixture) : IClassF
         Assert.Equal("MWS-TEST-001", orders[0].OrderNumber);
         Assert.Single(orders[0].Lines);
     }
+
+    [Fact]
+    public async Task CommerceService_CreatesCartLineForPublishedProductVariant()
+    {
+        await using var setupDbContext = fixture.CreateDbContext();
+        await setupDbContext.Database.EnsureCreatedAsync();
+
+        var suffix = Guid.NewGuid().ToString("N")[..12];
+        var createService = new CommerceApplicationService(new CommerceRepository(setupDbContext));
+        var created = await createService.CreateProductAsync(new CreateProductRequest
+        {
+            Handle = $"checkout-flow-{suffix}",
+            Title = $"Checkout Flow Product {suffix}",
+            Brand = "MALIEV",
+            Summary = "Checkout service-flow test product.",
+            Description = "Created to verify cart-line mutation through the real repository.",
+            ProductType = "Printed Product",
+            Status = ProductStatus.Draft,
+            Variants =
+            [
+                new CreateProductVariantRequest
+                {
+                    Sku = $"CHECKOUT-{suffix}",
+                    Title = "Default",
+                    PriceAmount = 1490.00m,
+                    Currency = "THB",
+                    InventoryQuantity = 7,
+                    OptionValuesJson = "{\"Lead time\":\"3 business days\"}"
+                }
+            ]
+        }, CancellationToken.None);
+
+        await using var publishDbContext = fixture.CreateDbContext();
+        var publishService = new CommerceApplicationService(new CommerceRepository(publishDbContext));
+        var published = await publishService.UpdateProductStatusAsync(created.Id, new UpdateProductStatusRequest { Status = ProductStatus.Published }, CancellationToken.None);
+        Assert.NotNull(published);
+
+        await using var cartDbContext = fixture.CreateDbContext();
+        var cartService = new CommerceApplicationService(new CommerceRepository(cartDbContext));
+        var cart = await cartService.CreateCartAsync(new CreateCartRequest { CustomerId = Guid.NewGuid(), Currency = "THB" }, CancellationToken.None);
+
+        await using var lineDbContext = fixture.CreateDbContext();
+        var lineRepository = new CommerceRepository(lineDbContext);
+        var lineService = new CommerceApplicationService(lineRepository);
+        var updatedCart = await lineService.UpsertCartLineAsync(cart.Id, new UpsertCartLineRequest { ProductVariantId = published!.Variants.Single().Id, Quantity = 2 }, CancellationToken.None);
+
+        Assert.NotNull(updatedCart);
+        var line = Assert.Single(updatedCart!.Lines);
+        Assert.Equal($"CHECKOUT-{suffix}", line.Sku);
+        Assert.Equal(2, line.Quantity);
+        Assert.Equal(2980.00m, updatedCart.TotalAmount);
+
+        await using var checkoutDbContext = fixture.CreateDbContext();
+        var checkoutService = new CommerceApplicationService(new CommerceRepository(checkoutDbContext));
+        var checkout = await checkoutService.CreateCheckoutSessionAsync(new CreateCheckoutSessionRequest
+        {
+            CartId = cart.Id,
+            CustomerId = cart.CustomerId!.Value
+        }, CancellationToken.None);
+
+        Assert.Equal(cart.Id, checkout.CartId);
+        Assert.Equal(2980.00m, checkout.TotalAmount);
+    }
 }

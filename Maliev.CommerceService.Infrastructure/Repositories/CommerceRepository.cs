@@ -150,6 +150,12 @@ public sealed class CommerceRepository(CommerceDbContext dbContext) : ICommerceR
     }
 
     /// <inheritdoc />
+    public void AddCartLine(CartLine line)
+    {
+        _dbContext.CartLines.Add(line);
+    }
+
+    /// <inheritdoc />
     public async Task AddCheckoutSessionAsync(CheckoutSession checkoutSession, CancellationToken cancellationToken)
     {
         await _dbContext.CheckoutSessions.AddAsync(checkoutSession, cancellationToken);

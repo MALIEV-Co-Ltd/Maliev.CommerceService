@@ -38,6 +38,8 @@ public sealed class CommerceServiceTests
         var repository = new Mock<ICommerceRepository>();
         repository.Setup(repo => repo.GetCartAsync(cart.Id, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
         repository.Setup(repo => repo.GetVariantAsync(variant.Id, It.IsAny<CancellationToken>())).ReturnsAsync(variant);
+        repository.Setup(repo => repo.AddCartLine(It.IsAny<CartLine>()))
+            .Callback<CartLine>(cart.Lines.Add);
         var service = new CommerceService.Application.Services.CommerceService(repository.Object);
 
         var result = await service.UpsertCartLineAsync(cart.Id, new UpsertCartLineRequest { ProductVariantId = variant.Id, Quantity = 2 }, CancellationToken.None);
