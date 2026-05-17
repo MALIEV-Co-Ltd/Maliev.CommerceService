@@ -22,6 +22,7 @@ public static class CommerceMapper
             product.Status,
             product.Variants.OrderBy(v => v.Title).Select(v => v.ToResponse()).ToList(),
             product.Media.OrderBy(m => m.SortOrder).Select(m => new ProductMediaResponse(m.Id, m.Url, m.AltText, m.SortOrder)).ToList(),
+            product.BomItems.OrderBy(item => item.SortOrder).ThenBy(item => item.ItemName).Select(item => item.ToResponse()).ToList(),
             product.ProductCollections
                 .Where(pc => pc.Collection is not null)
                 .OrderBy(pc => pc.SortOrder)
@@ -51,6 +52,22 @@ public static class CommerceMapper
     public static ProductVariantResponse ToResponse(this ProductVariant variant)
     {
         return new ProductVariantResponse(variant.Id, variant.Sku, variant.Title, variant.PriceAmount, variant.Currency, variant.InventoryQuantity, variant.IsActive, variant.OptionValuesJson);
+    }
+
+    /// <summary>Maps a BOM item to response.</summary>
+    public static ProductBomItemResponse ToResponse(this ProductBomItem item)
+    {
+        return new ProductBomItemResponse(
+            item.Id,
+            item.ItemName,
+            item.Specification,
+            item.Quantity,
+            item.Unit,
+            item.UnitCost,
+            item.Currency,
+            decimal.Round(item.Quantity * item.UnitCost, 2, MidpointRounding.AwayFromZero),
+            item.SortOrder,
+            item.Notes);
     }
 
     /// <summary>Maps a collection to response.</summary>

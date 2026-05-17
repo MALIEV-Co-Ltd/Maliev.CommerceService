@@ -17,6 +17,9 @@ public sealed class CommerceDbContext(DbContextOptions<CommerceDbContext> option
     /// <summary>Gets product media.</summary>
     public DbSet<ProductMedia> ProductMedia => Set<ProductMedia>();
 
+    /// <summary>Gets product bill of materials items.</summary>
+    public DbSet<ProductBomItem> ProductBomItems => Set<ProductBomItem>();
+
     /// <summary>Gets collections.</summary>
     public DbSet<Collection> Collections => Set<Collection>();
 
@@ -78,6 +81,23 @@ public sealed class CommerceDbContext(DbContextOptions<CommerceDbContext> option
             entity.HasOne(media => media.Product)
                 .WithMany(product => product.Media)
                 .HasForeignKey(media => media.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ProductBomItem>(entity =>
+        {
+            entity.HasKey(item => item.Id);
+            entity.HasIndex(item => new { item.ProductId, item.SortOrder });
+            entity.Property(item => item.ItemName).HasMaxLength(240).IsRequired();
+            entity.Property(item => item.Specification).HasMaxLength(500);
+            entity.Property(item => item.Unit).HasMaxLength(40).IsRequired();
+            entity.Property(item => item.UnitCost).HasPrecision(18, 2);
+            entity.Property(item => item.Quantity).HasPrecision(18, 4);
+            entity.Property(item => item.Currency).HasMaxLength(3).IsRequired();
+            entity.Property(item => item.Notes).HasMaxLength(1000);
+            entity.HasOne(item => item.Product)
+                .WithMany(product => product.BomItems)
+                .HasForeignKey(item => item.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

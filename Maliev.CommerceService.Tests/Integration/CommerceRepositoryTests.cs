@@ -55,6 +55,20 @@ public sealed class CommerceRepositoryTests(PostgreSqlFixture fixture) : IClassF
                     AltText = "Original image",
                     SortOrder = 0
                 }
+            ],
+            BomItems =
+            [
+                new CreateProductBomItemRequest
+                {
+                    ItemName = "Steel frame",
+                    Specification = "Powder-coated fixture",
+                    Quantity = 1m,
+                    Unit = "set",
+                    UnitCost = 2500m,
+                    Currency = "THB",
+                    SortOrder = 0,
+                    Notes = "Seed BOM row"
+                }
             ]
         }, CancellationToken.None);
 
@@ -90,6 +104,20 @@ public sealed class CommerceRepositoryTests(PostgreSqlFixture fixture) : IClassF
                     AltText = "Updated image",
                     SortOrder = 0
                 }
+            ],
+            BomItems =
+            [
+                new CreateProductBomItemRequest
+                {
+                    ItemName = "Aluminum frame",
+                    Specification = "Anodized fixture",
+                    Quantity = 2m,
+                    Unit = "set",
+                    UnitCost = 1500m,
+                    Currency = "THB",
+                    SortOrder = 0,
+                    Notes = "Updated BOM row"
+                }
             ]
         }, CancellationToken.None);
 
@@ -99,6 +127,12 @@ public sealed class CommerceRepositoryTests(PostgreSqlFixture fixture) : IClassF
         Assert.Equal(23456.78m, updated.Variants.Single().PriceAmount);
         Assert.Equal(9, updated.Variants.Single().InventoryQuantity);
         Assert.Equal("https://example.com/updated.png", updated.Media.Single().Url);
+        var bomItem = Assert.Single(updated.BomItems);
+        Assert.Equal("Aluminum frame", bomItem.ItemName);
+        Assert.Equal("Anodized fixture", bomItem.Specification);
+        Assert.Equal(2m, bomItem.Quantity);
+        Assert.Equal(1500m, bomItem.UnitCost);
+        Assert.Equal(3000m, bomItem.LineTotal);
         Assert.Equal(collection.Handle, updated.Collections.Single().Handle);
     }
 

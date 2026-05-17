@@ -47,6 +47,7 @@ public sealed class CommerceService(ICommerceRepository repository) : ICommerceS
         ApplyProductBasics(request, product);
         SyncVariants(product, request.Variants);
         SyncMedia(product, request.Media);
+        SyncBomItems(product, request.BomItems);
         await SyncCollectionsAsync(product, request.CollectionHandles, cancellationToken);
         product.UpdatedAtUtc = DateTimeOffset.UtcNow;
         await _repository.SaveChangesAsync(cancellationToken);
@@ -376,6 +377,11 @@ public sealed class CommerceService(ICommerceRepository repository) : ICommerceS
             product.Media.Add(CreateMedia(product.Id, mediaRequest));
         }
 
+        foreach (var bomItemRequest in request.BomItems)
+        {
+            product.BomItems.Add(CreateBomItem(product.Id, bomItemRequest));
+        }
+
         return product;
     }
 
@@ -518,6 +524,60 @@ public sealed class CommerceService(ICommerceRepository repository) : ICommerceS
         media.Url = request.Url.Trim();
         media.AltText = string.IsNullOrWhiteSpace(request.AltText) ? null : request.AltText.Trim();
         media.SortOrder = request.SortOrder;
+    }
+
+    private void SyncBomItems(Product product, IEnumerable<CreateProductBomItemRequest> bomItemRequests)
+    {
+        var requests = bomItemRequests.ToList();
+        var existingItems = product.BomItems
+            .OrderBy(item => item.SortOrder)
+            .ThenBy(item => item.Id)
+            .ToList();
+
+        for (var index = 0; index < requests.Count; index++)
+        {
+            if (index < existingItems.Count)
+            {
+                ApplyBomItem(existingItems[index], requests[index]);
+                continue;
+            }
+
+            product.BomItems.Add(CreateBomItem(product.Id, requests[index]));
+        }
+
+        var itemsToRemove = existingItems
+            .Skip(requests.Count)
+            .ToList();
+        foreach (var item in itemsToRemove)
+        {
+            product.BomItems.Remove(item);
+        }
+
+        _repository.RemoveProductBomItems(itemsToRemove);
+    }
+
+    private static ProductBomItem CreateBomItem(Guid productId, CreateProductBomItemRequest request)
+    {
+        var item = new ProductBomItem
+        {
+            Id = Guid.NewGuid(),
+            ProductId = productId
+        };
+
+        ApplyBomItem(item, request);
+        return item;
+    }
+
+    private static void ApplyBomItem(ProductBomItem item, CreateProductBomItemRequest request)
+    {
+        item.ItemName = request.ItemName.Trim();
+        item.Specification = string.IsNullOrWhiteSpace(request.Specification) ? null : request.Specification.Trim();
+        item.Quantity = decimal.Round(request.Quantity, 4, MidpointRounding.AwayFromZero);
+        item.Unit = request.Unit.Trim();
+        item.UnitCost = decimal.Round(request.UnitCost, 2, MidpointRounding.AwayFromZero);
+        item.Currency = NormalizeCurrency(request.Currency);
+        item.SortOrder = request.SortOrder;
+        item.Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim();
     }
 
     private async Task LinkCollectionsAsync(Product product, IEnumerable<string> handles, CancellationToken cancellationToken)

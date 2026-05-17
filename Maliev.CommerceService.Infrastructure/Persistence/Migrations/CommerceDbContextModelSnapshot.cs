@@ -245,6 +245,56 @@ namespace Maliev.CommerceService.Infrastructure.Persistence.Migrations
                     b.ToTable("Products");
                 });
 
+            modelBuilder.Entity("Maliev.CommerceService.Domain.Entities.ProductBomItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)");
+
+                    b.Property<string>("ItemName")
+                        .IsRequired()
+                        .HasMaxLength(240)
+                        .HasColumnType("character varying(240)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Specification")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId", "SortOrder");
+
+                    b.ToTable("ProductBomItems");
+                });
+
             modelBuilder.Entity("Maliev.CommerceService.Domain.Entities.ProductCollection", b =>
                 {
                     b.Property<Guid>("ProductId")
@@ -483,6 +533,17 @@ namespace Maliev.CommerceService.Infrastructure.Persistence.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("Maliev.CommerceService.Domain.Entities.ProductBomItem", b =>
+                {
+                    b.HasOne("Maliev.CommerceService.Domain.Entities.Product", "Product")
+                        .WithMany("BomItems")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("Maliev.CommerceService.Domain.Entities.ProductMedia", b =>
                 {
                     b.HasOne("Maliev.CommerceService.Domain.Entities.Product", "Product")
@@ -539,6 +600,8 @@ namespace Maliev.CommerceService.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Maliev.CommerceService.Domain.Entities.Product", b =>
                 {
+                    b.Navigation("BomItems");
+
                     b.Navigation("Media");
 
                     b.Navigation("ProductCollections");

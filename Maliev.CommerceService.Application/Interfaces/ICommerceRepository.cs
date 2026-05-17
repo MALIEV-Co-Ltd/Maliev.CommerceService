@@ -25,6 +25,9 @@ public interface ICommerceRepository
     /// <summary>Removes product media.</summary>
     void RemoveProductMedia(IEnumerable<ProductMedia> media);
 
+    /// <summary>Removes product bill of materials items.</summary>
+    void RemoveProductBomItems(IEnumerable<ProductBomItem> items);
+
     /// <summary>Removes product collection links.</summary>
     void RemoveProductCollections(IEnumerable<ProductCollection> links);
 

@@ -57,6 +57,7 @@ public sealed class CommerceRepository(CommerceDbContext dbContext) : ICommerceR
         return await _dbContext.Products
             .Include(product => product.Variants)
             .Include(product => product.Media)
+            .Include(product => product.BomItems)
             .Include(product => product.ProductCollections)
                 .ThenInclude(link => link.Collection)
             .FirstOrDefaultAsync(product => product.Handle == handle, cancellationToken);
@@ -68,6 +69,7 @@ public sealed class CommerceRepository(CommerceDbContext dbContext) : ICommerceR
         return await _dbContext.Products
             .Include(product => product.Variants)
             .Include(product => product.Media)
+            .Include(product => product.BomItems)
             .Include(product => product.ProductCollections)
                 .ThenInclude(link => link.Collection)
             .FirstOrDefaultAsync(product => product.Id == id, cancellationToken);
@@ -89,6 +91,12 @@ public sealed class CommerceRepository(CommerceDbContext dbContext) : ICommerceR
     public void RemoveProductMedia(IEnumerable<ProductMedia> media)
     {
         _dbContext.ProductMedia.RemoveRange(media);
+    }
+
+    /// <inheritdoc />
+    public void RemoveProductBomItems(IEnumerable<ProductBomItem> items)
+    {
+        _dbContext.ProductBomItems.RemoveRange(items);
     }
 
     /// <inheritdoc />

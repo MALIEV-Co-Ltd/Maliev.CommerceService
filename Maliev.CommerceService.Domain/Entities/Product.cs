@@ -53,6 +53,9 @@ public class Product
     /// <summary>Gets the product media.</summary>
     public List<ProductMedia> Media { get; } = [];
 
+    /// <summary>Gets the product bill of materials items.</summary>
+    public List<ProductBomItem> BomItems { get; } = [];
+
     /// <summary>Gets the product collection links.</summary>
     public List<ProductCollection> ProductCollections { get; } = [];
 }
