@@ -61,7 +61,16 @@ public sealed class CommerceRepositoryTests(PostgreSqlFixture fixture) : IClassF
                 new CreateProductBomItemRequest
                 {
                     ItemName = "Steel frame",
+                    PartNumber = "MLV-FRM-OLD",
+                    AssemblyName = "Injection unit",
+                    SubassemblyName = "Frame assembly",
                     Specification = "Powder-coated fixture",
+                    ImageUrl = "https://example.com/bom/old-frame.png",
+                    DrawingUrl = "https://example.com/bom/old-frame.pdf",
+                    SupplierName = "Old Supplier Co.",
+                    SupplierUrl = "https://supplier.example.com/old-frame",
+                    LeadTimeDays = 14,
+                    SourcingTimeDays = 3,
                     Quantity = 1m,
                     Unit = "set",
                     UnitCost = 2500m,
@@ -110,7 +119,16 @@ public sealed class CommerceRepositoryTests(PostgreSqlFixture fixture) : IClassF
                 new CreateProductBomItemRequest
                 {
                     ItemName = "Aluminum frame",
+                    PartNumber = "MLV-FRM-NEW",
+                    AssemblyName = "Injection unit",
+                    SubassemblyName = "Frame assembly",
                     Specification = "Anodized fixture",
+                    ImageUrl = "https://example.com/bom/new-frame.png",
+                    DrawingUrl = "https://example.com/bom/new-frame.pdf",
+                    SupplierName = "New Supplier Co.",
+                    SupplierUrl = "https://supplier.example.com/new-frame",
+                    LeadTimeDays = 21,
+                    SourcingTimeDays = 5,
                     Quantity = 2m,
                     Unit = "set",
                     UnitCost = 1500m,
@@ -129,7 +147,16 @@ public sealed class CommerceRepositoryTests(PostgreSqlFixture fixture) : IClassF
         Assert.Equal("https://example.com/updated.png", updated.Media.Single().Url);
         var bomItem = Assert.Single(updated.BomItems);
         Assert.Equal("Aluminum frame", bomItem.ItemName);
+        Assert.Equal("MLV-FRM-NEW", bomItem.PartNumber);
+        Assert.Equal("Injection unit", bomItem.AssemblyName);
+        Assert.Equal("Frame assembly", bomItem.SubassemblyName);
         Assert.Equal("Anodized fixture", bomItem.Specification);
+        Assert.Equal("https://example.com/bom/new-frame.png", bomItem.ImageUrl);
+        Assert.Equal("https://example.com/bom/new-frame.pdf", bomItem.DrawingUrl);
+        Assert.Equal("New Supplier Co.", bomItem.SupplierName);
+        Assert.Equal("https://supplier.example.com/new-frame", bomItem.SupplierUrl);
+        Assert.Equal(21, bomItem.LeadTimeDays);
+        Assert.Equal(5, bomItem.SourcingTimeDays);
         Assert.Equal(2m, bomItem.Quantity);
         Assert.Equal(1500m, bomItem.UnitCost);
         Assert.Equal(3000m, bomItem.LineTotal);

@@ -251,19 +251,38 @@ namespace Maliev.CommerceService.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("AssemblyName")
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)");
+
                     b.Property<string>("Currency")
                         .IsRequired()
                         .HasMaxLength(3)
                         .HasColumnType("character varying(3)");
+
+                    b.Property<string>("DrawingUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
 
                     b.Property<string>("ItemName")
                         .IsRequired()
                         .HasMaxLength(240)
                         .HasColumnType("character varying(240)");
 
+                    b.Property<int?>("LeadTimeDays")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Notes")
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("PartNumber")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
 
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uuid");
@@ -275,9 +294,24 @@ namespace Maliev.CommerceService.Infrastructure.Persistence.Migrations
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("SourcingTimeDays")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Specification")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
+
+                    b.Property<string>("SubassemblyName")
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)");
+
+                    b.Property<string>("SupplierName")
+                        .HasMaxLength(240)
+                        .HasColumnType("character varying(240)");
+
+                    b.Property<string>("SupplierUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
 
                     b.Property<string>("Unit")
                         .IsRequired()
@@ -514,6 +548,17 @@ namespace Maliev.CommerceService.Infrastructure.Persistence.Migrations
                     b.Navigation("Cart");
                 });
 
+            modelBuilder.Entity("Maliev.CommerceService.Domain.Entities.ProductBomItem", b =>
+                {
+                    b.HasOne("Maliev.CommerceService.Domain.Entities.Product", "Product")
+                        .WithMany("BomItems")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("Maliev.CommerceService.Domain.Entities.ProductCollection", b =>
                 {
                     b.HasOne("Maliev.CommerceService.Domain.Entities.Collection", "Collection")
@@ -529,17 +574,6 @@ namespace Maliev.CommerceService.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Collection");
-
-                    b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("Maliev.CommerceService.Domain.Entities.ProductBomItem", b =>
-                {
-                    b.HasOne("Maliev.CommerceService.Domain.Entities.Product", "Product")
-                        .WithMany("BomItems")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
 
                     b.Navigation("Product");
                 });

@@ -89,7 +89,14 @@ public sealed class CommerceDbContext(DbContextOptions<CommerceDbContext> option
             entity.HasKey(item => item.Id);
             entity.HasIndex(item => new { item.ProductId, item.SortOrder });
             entity.Property(item => item.ItemName).HasMaxLength(240).IsRequired();
+            entity.Property(item => item.PartNumber).HasMaxLength(120);
+            entity.Property(item => item.AssemblyName).HasMaxLength(160);
+            entity.Property(item => item.SubassemblyName).HasMaxLength(160);
             entity.Property(item => item.Specification).HasMaxLength(500);
+            entity.Property(item => item.ImageUrl).HasMaxLength(1000);
+            entity.Property(item => item.DrawingUrl).HasMaxLength(1000);
+            entity.Property(item => item.SupplierName).HasMaxLength(240);
+            entity.Property(item => item.SupplierUrl).HasMaxLength(1000);
             entity.Property(item => item.Unit).HasMaxLength(40).IsRequired();
             entity.Property(item => item.UnitCost).HasPrecision(18, 2);
             entity.Property(item => item.Quantity).HasPrecision(18, 4);

@@ -571,13 +571,27 @@ public sealed class CommerceService(ICommerceRepository repository) : ICommerceS
     private static void ApplyBomItem(ProductBomItem item, CreateProductBomItemRequest request)
     {
         item.ItemName = request.ItemName.Trim();
+        item.PartNumber = NormalizeOptional(request.PartNumber);
+        item.AssemblyName = NormalizeOptional(request.AssemblyName);
+        item.SubassemblyName = NormalizeOptional(request.SubassemblyName);
         item.Specification = string.IsNullOrWhiteSpace(request.Specification) ? null : request.Specification.Trim();
+        item.ImageUrl = NormalizeOptional(request.ImageUrl);
+        item.DrawingUrl = NormalizeOptional(request.DrawingUrl);
+        item.SupplierName = NormalizeOptional(request.SupplierName);
+        item.SupplierUrl = NormalizeOptional(request.SupplierUrl);
+        item.LeadTimeDays = request.LeadTimeDays;
+        item.SourcingTimeDays = request.SourcingTimeDays;
         item.Quantity = decimal.Round(request.Quantity, 4, MidpointRounding.AwayFromZero);
         item.Unit = request.Unit.Trim();
         item.UnitCost = decimal.Round(request.UnitCost, 2, MidpointRounding.AwayFromZero);
         item.Currency = NormalizeCurrency(request.Currency);
         item.SortOrder = request.SortOrder;
         item.Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim();
+    }
+
+    private static string? NormalizeOptional(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
 
     private async Task LinkCollectionsAsync(Product product, IEnumerable<string> handles, CancellationToken cancellationToken)
