@@ -9,7 +9,7 @@ namespace Maliev.CommerceService.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
     [DbContext(typeof(CommerceDbContext))]
-    [Migration("20260518083000_AddProductBomItems")]
+    [Migration("20260518000500_AddProductBomItems")]
     public partial class AddProductBomItems : Migration
     {
         /// <inheritdoc />
