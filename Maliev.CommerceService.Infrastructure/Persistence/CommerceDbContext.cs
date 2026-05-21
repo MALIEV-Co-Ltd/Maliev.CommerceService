@@ -49,6 +49,7 @@ public sealed class CommerceDbContext(DbContextOptions<CommerceDbContext> option
         modelBuilder.Entity<Product>(entity =>
         {
             entity.HasKey(product => product.Id);
+            entity.Property(product => product.Id).ValueGeneratedNever();
             entity.HasIndex(product => product.Handle).IsUnique();
             entity.Property(product => product.Handle).HasMaxLength(160).IsRequired();
             entity.Property(product => product.Title).HasMaxLength(240).IsRequired();
@@ -62,6 +63,7 @@ public sealed class CommerceDbContext(DbContextOptions<CommerceDbContext> option
         modelBuilder.Entity<ProductVariant>(entity =>
         {
             entity.HasKey(variant => variant.Id);
+            entity.Property(variant => variant.Id).ValueGeneratedNever();
             entity.HasIndex(variant => variant.Sku).IsUnique();
             entity.Property(variant => variant.Sku).HasMaxLength(120).IsRequired();
             entity.Property(variant => variant.Title).HasMaxLength(240).IsRequired();
@@ -76,6 +78,7 @@ public sealed class CommerceDbContext(DbContextOptions<CommerceDbContext> option
         modelBuilder.Entity<ProductMedia>(entity =>
         {
             entity.HasKey(media => media.Id);
+            entity.Property(media => media.Id).ValueGeneratedNever();
             entity.Property(media => media.Url).HasMaxLength(1000).IsRequired();
             entity.Property(media => media.AltText).HasMaxLength(240);
             entity.HasOne(media => media.Product)
@@ -87,6 +90,7 @@ public sealed class CommerceDbContext(DbContextOptions<CommerceDbContext> option
         modelBuilder.Entity<ProductBomItem>(entity =>
         {
             entity.HasKey(item => item.Id);
+            entity.Property(item => item.Id).ValueGeneratedNever();
             entity.HasIndex(item => new { item.ProductId, item.SortOrder });
             entity.Property(item => item.ItemName).HasMaxLength(240).IsRequired();
             entity.Property(item => item.PartNumber).HasMaxLength(120);
@@ -111,6 +115,7 @@ public sealed class CommerceDbContext(DbContextOptions<CommerceDbContext> option
         modelBuilder.Entity<Collection>(entity =>
         {
             entity.HasKey(collection => collection.Id);
+            entity.Property(collection => collection.Id).ValueGeneratedNever();
             entity.HasIndex(collection => collection.Handle).IsUnique();
             entity.Property(collection => collection.Handle).HasMaxLength(160).IsRequired();
             entity.Property(collection => collection.Title).HasMaxLength(200).IsRequired();
@@ -133,6 +138,7 @@ public sealed class CommerceDbContext(DbContextOptions<CommerceDbContext> option
         modelBuilder.Entity<Cart>(entity =>
         {
             entity.HasKey(cart => cart.Id);
+            entity.Property(cart => cart.Id).ValueGeneratedNever();
             entity.HasIndex(cart => cart.CustomerId);
             entity.Property(cart => cart.AnonymousKey).HasMaxLength(160);
             entity.Property(cart => cart.Status).HasMaxLength(40).IsRequired();
@@ -143,6 +149,7 @@ public sealed class CommerceDbContext(DbContextOptions<CommerceDbContext> option
         modelBuilder.Entity<CartLine>(entity =>
         {
             entity.HasKey(line => line.Id);
+            entity.Property(line => line.Id).ValueGeneratedNever();
             entity.HasIndex(line => new { line.CartId, line.ProductVariantId }).IsUnique();
             entity.Property(line => line.UnitPriceAmount).HasPrecision(18, 2);
             entity.Property(line => line.Currency).HasMaxLength(3).IsRequired();
@@ -161,6 +168,7 @@ public sealed class CommerceDbContext(DbContextOptions<CommerceDbContext> option
         modelBuilder.Entity<CheckoutSession>(entity =>
         {
             entity.HasKey(session => session.Id);
+            entity.Property(session => session.Id).ValueGeneratedNever();
             entity.HasIndex(session => session.CustomerId);
             entity.Property(session => session.Status).HasMaxLength(40).IsRequired();
             entity.Property(session => session.Currency).HasMaxLength(3).IsRequired();
@@ -174,6 +182,7 @@ public sealed class CommerceDbContext(DbContextOptions<CommerceDbContext> option
         modelBuilder.Entity<StoreOrder>(entity =>
         {
             entity.HasKey(order => order.Id);
+            entity.Property(order => order.Id).ValueGeneratedNever();
             entity.HasIndex(order => order.OrderNumber).IsUnique();
             entity.HasIndex(order => order.CustomerId);
             entity.Property(order => order.OrderNumber).HasMaxLength(40).IsRequired();
@@ -189,6 +198,7 @@ public sealed class CommerceDbContext(DbContextOptions<CommerceDbContext> option
         modelBuilder.Entity<StoreOrderLine>(entity =>
         {
             entity.HasKey(line => line.Id);
+            entity.Property(line => line.Id).ValueGeneratedNever();
             entity.Property(line => line.Sku).HasMaxLength(120).IsRequired();
             entity.Property(line => line.Title).HasMaxLength(300).IsRequired();
             entity.Property(line => line.Currency).HasMaxLength(3).IsRequired();

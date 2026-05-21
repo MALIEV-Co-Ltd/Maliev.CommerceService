@@ -60,6 +60,7 @@ public sealed class CommerceRepository(CommerceDbContext dbContext) : ICommerceR
             .Include(product => product.BomItems)
             .Include(product => product.ProductCollections)
                 .ThenInclude(link => link.Collection)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(product => product.Handle == handle, cancellationToken);
     }
 
@@ -72,6 +73,7 @@ public sealed class CommerceRepository(CommerceDbContext dbContext) : ICommerceR
             .Include(product => product.BomItems)
             .Include(product => product.ProductCollections)
                 .ThenInclude(link => link.Collection)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(product => product.Id == id, cancellationToken);
     }
 

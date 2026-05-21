@@ -245,6 +245,124 @@ public sealed class CommerceRepositoryTests(PostgreSqlFixture fixture) : IClassF
     }
 
     [Fact]
+    public async Task UpdateProductAsync_WhenAddingBomItem_PersistsAllBomItems()
+    {
+        await using var setupDbContext = fixture.CreateDbContext();
+        await setupDbContext.Database.EnsureCreatedAsync();
+
+        var suffix = Guid.NewGuid().ToString("N")[..8];
+        var createService = new CommerceApplicationService(new CommerceRepository(setupDbContext));
+        var created = await createService.CreateProductAsync(new CreateProductRequest
+        {
+            Handle = $"e2e-bom-add-{suffix}",
+            Title = "BOM Add Product",
+            Brand = "MALIEV",
+            Summary = "Initial summary",
+            Description = "Initial description",
+            ProductType = "Manufactured Product",
+            Status = ProductStatus.Draft,
+            Variants =
+            [
+                new CreateProductVariantRequest
+                {
+                    Sku = $"E2E-BOM-ADD-{suffix}",
+                    Title = "Default",
+                    PriceAmount = 100m,
+                    Currency = "THB",
+                    InventoryQuantity = 5
+                }
+            ],
+            BomItems =
+            [
+                new CreateProductBomItemRequest
+                {
+                    ItemName = "Aluminum plate",
+                    PartNumber = $"AL-{suffix}",
+                    Quantity = 2m,
+                    Unit = "pcs",
+                    UnitCost = 350m,
+                    Currency = "THB",
+                    SortOrder = 0
+                },
+                new CreateProductBomItemRequest
+                {
+                    ItemName = "Hex screw",
+                    PartNumber = $"HEX-{suffix}",
+                    Quantity = 8m,
+                    Unit = "pcs",
+                    UnitCost = 8.5m,
+                    Currency = "THB",
+                    SortOrder = 1
+                }
+            ]
+        }, CancellationToken.None);
+
+        await using var updateDbContext = fixture.CreateDbContext();
+        var updateService = new CommerceApplicationService(new CommerceRepository(updateDbContext));
+
+        var updated = await updateService.UpdateProductAsync(created.Id, new UpdateProductRequest
+        {
+            Handle = created.Handle,
+            Title = created.Title,
+            Brand = created.Brand,
+            Summary = created.Summary,
+            Description = created.Description,
+            ProductType = created.ProductType,
+            Status = created.Status,
+            Variants =
+            [
+                new CreateProductVariantRequest
+                {
+                    Sku = created.Variants.Single().Sku,
+                    Title = created.Variants.Single().Title,
+                    PriceAmount = created.Variants.Single().PriceAmount,
+                    Currency = created.Variants.Single().Currency,
+                    InventoryQuantity = created.Variants.Single().InventoryQuantity
+                }
+            ],
+            BomItems =
+            [
+                new CreateProductBomItemRequest
+                {
+                    ItemName = "Aluminum plate",
+                    PartNumber = $"AL-{suffix}",
+                    Quantity = 2m,
+                    Unit = "pcs",
+                    UnitCost = 350m,
+                    Currency = "THB",
+                    SortOrder = 0
+                },
+                new CreateProductBomItemRequest
+                {
+                    ItemName = "Hex screw",
+                    PartNumber = $"HEX-{suffix}",
+                    Quantity = 8m,
+                    Unit = "pcs",
+                    UnitCost = 8.5m,
+                    Currency = "THB",
+                    SortOrder = 1
+                },
+                new CreateProductBomItemRequest
+                {
+                    ItemName = "UI gasket",
+                    PartNumber = $"GSK-{suffix}",
+                    SupplierName = "E2E Rubber Supply",
+                    DrawingUrl = "https://example.com/e2e-gasket-drawing.pdf",
+                    Quantity = 1m,
+                    Unit = "pcs",
+                    UnitCost = 42m,
+                    Currency = "THB",
+                    SortOrder = 2
+                }
+            ]
+        }, CancellationToken.None);
+
+        Assert.NotNull(updated);
+        Assert.Equal(3, updated.BomItems.Count);
+        Assert.Contains(updated.BomItems, item => item.ItemName == "UI gasket" && item.SupplierName == "E2E Rubber Supply");
+    }
+
+    [Fact]
     public async Task Repository_PersistsProductCartCheckoutAndStoreOrder()
     {
         await using var dbContext = fixture.CreateDbContext();
