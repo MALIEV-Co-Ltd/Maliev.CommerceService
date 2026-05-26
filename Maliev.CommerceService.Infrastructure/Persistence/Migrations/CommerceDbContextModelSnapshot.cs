@@ -25,7 +25,6 @@ namespace Maliev.CommerceService.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Maliev.CommerceService.Domain.Entities.Cart", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<string>("AnonymousKey")
@@ -67,7 +66,6 @@ namespace Maliev.CommerceService.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Maliev.CommerceService.Domain.Entities.CartLine", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("CartId")
@@ -111,7 +109,6 @@ namespace Maliev.CommerceService.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Maliev.CommerceService.Domain.Entities.CheckoutSession", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<string>("BillingAddressJson")
@@ -158,7 +155,6 @@ namespace Maliev.CommerceService.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Maliev.CommerceService.Domain.Entities.Collection", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<string>("Description")
@@ -169,6 +165,14 @@ namespace Maliev.CommerceService.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(160)
                         .HasColumnType("character varying(160)");
+
+                    b.Property<string>("ImageAltText")
+                        .HasMaxLength(240)
+                        .HasColumnType("character varying(240)");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
 
                     b.Property<bool>("IsPublished")
                         .HasColumnType("boolean");
@@ -189,7 +193,6 @@ namespace Maliev.CommerceService.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Maliev.CommerceService.Domain.Entities.Product", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<string>("Brand")
@@ -248,7 +251,6 @@ namespace Maliev.CommerceService.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Maliev.CommerceService.Domain.Entities.ProductBomItem", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<string>("AssemblyName")
@@ -350,7 +352,6 @@ namespace Maliev.CommerceService.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Maliev.CommerceService.Domain.Entities.ProductMedia", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<string>("AltText")
@@ -378,7 +379,6 @@ namespace Maliev.CommerceService.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Maliev.CommerceService.Domain.Entities.ProductVariant", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<string>("Currency")
@@ -425,7 +425,6 @@ namespace Maliev.CommerceService.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Maliev.CommerceService.Domain.Entities.StoreOrder", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<string>("BillingAddressJson")
@@ -480,7 +479,6 @@ namespace Maliev.CommerceService.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Maliev.CommerceService.Domain.Entities.StoreOrderLine", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<string>("Currency")

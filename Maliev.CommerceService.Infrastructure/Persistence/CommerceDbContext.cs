@@ -120,6 +120,8 @@ public sealed class CommerceDbContext(DbContextOptions<CommerceDbContext> option
             entity.Property(collection => collection.Handle).HasMaxLength(160).IsRequired();
             entity.Property(collection => collection.Title).HasMaxLength(200).IsRequired();
             entity.Property(collection => collection.Description).HasMaxLength(1000);
+            entity.Property(collection => collection.ImageUrl).HasMaxLength(1000);
+            entity.Property(collection => collection.ImageAltText).HasMaxLength(240);
         });
 
         modelBuilder.Entity<ProductCollection>(entity =>

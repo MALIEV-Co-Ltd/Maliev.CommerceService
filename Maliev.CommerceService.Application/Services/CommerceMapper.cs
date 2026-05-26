@@ -82,7 +82,7 @@ public static class CommerceMapper
     /// <summary>Maps a collection to response.</summary>
     public static CollectionResponse ToResponse(this Collection collection)
     {
-        return new CollectionResponse(collection.Id, collection.Handle, collection.Title, collection.Description, collection.IsPublished);
+        return new CollectionResponse(collection.Id, collection.Handle, collection.Title, collection.Description, collection.ImageUrl, collection.ImageAltText, collection.IsPublished);
     }
 
     /// <summary>Maps a cart to response.</summary>

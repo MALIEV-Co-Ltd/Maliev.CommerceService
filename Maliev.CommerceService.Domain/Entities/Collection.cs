@@ -24,6 +24,14 @@ public class Collection
     [MaxLength(1000)]
     public string? Description { get; set; }
 
+    /// <summary>Gets or sets the storefront collection image URL.</summary>
+    [MaxLength(1000)]
+    public string? ImageUrl { get; set; }
+
+    /// <summary>Gets or sets the storefront collection image alt text.</summary>
+    [MaxLength(240)]
+    public string? ImageAltText { get; set; }
+
     /// <summary>Gets or sets a value indicating whether the collection is visible.</summary>
     public bool IsPublished { get; set; } = true;
 

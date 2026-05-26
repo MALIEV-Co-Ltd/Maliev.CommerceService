@@ -112,6 +112,8 @@ public sealed class CommerceService(ICommerceRepository repository) : ICommerceS
             Handle = NormalizeHandle(request.Handle),
             Title = request.Title.Trim(),
             Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim(),
+            ImageUrl = NormalizeOptional(request.ImageUrl),
+            ImageAltText = NormalizeOptional(request.ImageAltText),
             IsPublished = request.IsPublished
         };
 
@@ -132,6 +134,8 @@ public sealed class CommerceService(ICommerceRepository repository) : ICommerceS
         collection.Handle = NormalizeHandle(request.Handle);
         collection.Title = request.Title.Trim();
         collection.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
+        collection.ImageUrl = NormalizeOptional(request.ImageUrl);
+        collection.ImageAltText = NormalizeOptional(request.ImageAltText);
         collection.IsPublished = request.IsPublished;
         await _repository.SaveChangesAsync(cancellationToken);
         return collection.ToResponse();

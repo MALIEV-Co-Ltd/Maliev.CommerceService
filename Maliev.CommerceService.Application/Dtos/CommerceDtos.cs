@@ -76,7 +76,7 @@ public sealed record ProductBomItemResponse(
 /// <summary>
 /// Collection response.
 /// </summary>
-public sealed record CollectionResponse(Guid Id, string Handle, string Title, string? Description, bool IsPublished);
+public sealed record CollectionResponse(Guid Id, string Handle, string Title, string? Description, string? ImageUrl, string? ImageAltText, bool IsPublished);
 
 /// <summary>
 /// Collection summary response.
@@ -320,6 +320,14 @@ public class CreateCollectionRequest
     /// <summary>Gets or sets the description.</summary>
     [MaxLength(1000)]
     public string? Description { get; set; }
+
+    /// <summary>Gets or sets the collection image URL.</summary>
+    [MaxLength(1000)]
+    public string? ImageUrl { get; set; }
+
+    /// <summary>Gets or sets the collection image alt text.</summary>
+    [MaxLength(240)]
+    public string? ImageAltText { get; set; }
 
     /// <summary>Gets or sets whether the collection is published.</summary>
     public bool IsPublished { get; set; } = true;

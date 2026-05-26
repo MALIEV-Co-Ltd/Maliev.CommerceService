@@ -18,6 +18,35 @@ public sealed class CommerceServiceTests
     }
 
     [Fact]
+    public async Task CreateCollectionAsync_WithImageMetadata_PersistsCollectionImage()
+    {
+        Collection? capturedCollection = null;
+        var repository = new Mock<ICommerceRepository>();
+        repository.Setup(repo => repo.AddCollectionAsync(It.IsAny<Collection>(), It.IsAny<CancellationToken>()))
+            .Callback<Collection, CancellationToken>((collection, _) => capturedCollection = collection)
+            .Returns(Task.CompletedTask);
+        var service = new CommerceService.Application.Services.CommerceService(repository.Object);
+
+        var result = await service.CreateCollectionAsync(new CreateCollectionRequest
+        {
+            Handle = "Injection Molding Machines",
+            Title = "Injection molding machines",
+            Description = "Machines for small-batch plastic parts.",
+            ImageUrl = "api/v1/commerce/collections/media/collection-image",
+            ImageAltText = "Pneumatic injection molding machine collection",
+            IsPublished = true
+        }, CancellationToken.None);
+
+        Assert.NotNull(capturedCollection);
+        Assert.Equal("injection-molding-machines", capturedCollection!.Handle);
+        Assert.Equal("api/v1/commerce/collections/media/collection-image", capturedCollection.ImageUrl);
+        Assert.Equal("Pneumatic injection molding machine collection", capturedCollection.ImageAltText);
+        Assert.Equal(capturedCollection.ImageUrl, result.ImageUrl);
+        Assert.Equal(capturedCollection.ImageAltText, result.ImageAltText);
+        repository.Verify(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task UpsertCartLineAsync_WithActiveVariant_AddsPriceSnapshot()
     {
         var product = new Product { Id = Guid.NewGuid(), Handle = "simmount", Title = "SimMount", Status = ProductStatus.Published };
