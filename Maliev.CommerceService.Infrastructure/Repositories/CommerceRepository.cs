@@ -15,10 +15,6 @@ public sealed class CommerceRepository(CommerceDbContext dbContext) : ICommerceR
     {
         var products = _dbContext.Products
             .AsNoTracking()
-            .Include(product => product.Variants)
-            .Include(product => product.Media)
-            .Include(product => product.ProductCollections)
-                .ThenInclude(link => link.Collection)
             .AsQueryable();
 
         if (!includeDrafts)
@@ -43,6 +39,11 @@ public sealed class CommerceRepository(CommerceDbContext dbContext) : ICommerceR
 
         var totalCount = await products.CountAsync(cancellationToken);
         var items = await products
+            .Include(product => product.Variants)
+            .Include(product => product.Media)
+            .Include(product => product.ProductCollections)
+                .ThenInclude(link => link.Collection)
+            .AsSplitQuery()
             .OrderBy(product => product.Title)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
