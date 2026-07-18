@@ -1,0 +1,39 @@
+name: Reusable Validation
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  validate:
+    name: validate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      NUGET_USERNAME: ${{ github.actor }}
+      NUGET_PASSWORD: ${{ github.token }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore Maliev.CommerceService.slnx
+
+      - name: Audit NuGet dependencies
+        run: dotnet list Maliev.CommerceService.slnx package --vulnerable --include-transitive
+
+      - name: Build
+        run: dotnet build Maliev.CommerceService.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test Maliev.CommerceService.slnx --configuration Release --no-restore --no-build --verbosity normal
