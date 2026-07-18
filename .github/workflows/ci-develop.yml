@@ -6,7 +6,6 @@ on:
 
 permissions:
   contents: read
-  packages: read
 
 concurrency:
   group: commerce-service-develop-${{ github.ref }}

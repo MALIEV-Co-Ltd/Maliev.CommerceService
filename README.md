@@ -47,8 +47,9 @@ dotnet test Maliev.CommerceService.slnx --configuration Release
 ## Validation and Release Boundary
 
 GitHub Actions validates pull requests, `main`, `develop`, and `release/v*`
-tags by restoring private MALIEV packages with the ephemeral read-only workflow
-token, auditing dependencies, building the solution, and running all tests.
+tags by checking out immutable public shared-source commits, restoring from
+NuGet.org without package credentials, auditing dependencies, building the
+solution, and running all tests.
 
 No workflow in this repository publishes container images, authenticates to
 Google Cloud, modifies GitOps, or deploys to Kubernetes. Release promotion is

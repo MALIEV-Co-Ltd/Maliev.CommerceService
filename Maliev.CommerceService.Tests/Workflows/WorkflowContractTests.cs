@@ -16,7 +16,7 @@ public sealed class WorkflowContractTests
         Assert.Contains("pull_request:", text);
         Assert.DoesNotContain("paths:", text);
         Assert.Contains("contents: read", text);
-        Assert.Contains("packages: read", text);
+        Assert.DoesNotContain("packages: read", text);
         Assert.Contains("uses: ./.github/workflows/_validate.yml", text);
         AssertSafe(text);
     }
@@ -34,17 +34,33 @@ public sealed class WorkflowContractTests
     }
 
     [Fact]
-    public void ReusableValidation_UsesOnlyEphemeralPackageTokenAndPinnedActions()
+    public void ReusableValidation_IsCredentialFreeAndUsesPinnedActions()
     {
         var text = Read("_validate.yml");
         Assert.Contains("workflow_call:", text);
         Assert.Contains("name: validate", text);
-        Assert.Contains("packages: read", text);
-        Assert.Contains("NUGET_PASSWORD: ${{ github.token }}", text);
+        Assert.DoesNotContain("NUGET_PASSWORD", text);
+        Assert.DoesNotContain("packages: read", text);
         Assert.Contains("persist-credentials: false", text);
         Assert.Contains("actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", text);
         Assert.Contains("actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68", text);
         AssertSafe(text);
+    }
+
+    [Fact]
+    public void Validation_UsesImmutablePublicSharedSourcesWithoutPackageCredentials()
+    {
+        var workflow = Read("_validate.yml");
+        var project = File.ReadAllText(Path.Combine(Root, "Maliev.CommerceService.Api", "Maliev.CommerceService.Api.csproj"));
+
+        Assert.Contains("repository: MALIEV-Co-Ltd/Maliev.Aspire", workflow);
+        Assert.Contains("ref: 6344320b4e8c11e55ebc78107308a80b74f498da", workflow);
+        Assert.Contains("repository: MALIEV-Co-Ltd/Maliev.MessagingContracts", workflow);
+        Assert.Contains("ref: d633b24f9c02e4da2024bd164f1fb61acf6e6862", workflow);
+        Assert.Contains("SharedSourceRoot", workflow);
+        Assert.Contains("--configfile nuget.validation.config", workflow);
+        Assert.Contains("$(SharedSourceRoot)", project);
+        Assert.DoesNotContain("$(GITHUB_ACTIONS)", project);
     }
 
     [Fact]
@@ -68,7 +84,7 @@ public sealed class WorkflowContractTests
 
     private static void AssertSafe(string text)
     {
-        foreach (var value in new[] { "secrets.", "GITOPS_PAT", "id-token: write", "credentials_json", "google-github-actions/auth", "gcloud auth", "docker push", "maliev-gitops", "kustomize edit", "gh pr create" })
+        foreach (var value in new[] { "secrets.", "GITOPS_PAT", "NUGET_PASSWORD", "id-token: write", "credentials_json", "google-github-actions/auth", "gcloud auth", "docker push", "maliev-gitops", "kustomize edit", "gh pr create" })
         {
             Assert.DoesNotContain(value, text, StringComparison.OrdinalIgnoreCase);
         }
