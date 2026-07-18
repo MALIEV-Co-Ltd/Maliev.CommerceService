@@ -54,9 +54,9 @@ public sealed class WorkflowContractTests
         var project = File.ReadAllText(Path.Combine(Root, "Maliev.CommerceService.Api", "Maliev.CommerceService.Api.csproj"));
 
         Assert.Contains("repository: MALIEV-Co-Ltd/Maliev.Aspire", workflow);
-        Assert.Contains("ref: 6344320b4e8c11e55ebc78107308a80b74f498da", workflow);
+        Assert.Contains("ref: 01d506203763b914e237268a8746f1406423df86", workflow);
         Assert.Contains("repository: MALIEV-Co-Ltd/Maliev.MessagingContracts", workflow);
-        Assert.Contains("ref: d633b24f9c02e4da2024bd164f1fb61acf6e6862", workflow);
+        Assert.Contains("ref: 559a00db0c7920a5247fdff60d4476ad23a9a501", workflow);
         Assert.Contains("SharedSourceRoot", workflow);
         Assert.Contains("--configfile nuget.validation.config", workflow);
         Assert.Contains("$(SharedSourceRoot)", project);
