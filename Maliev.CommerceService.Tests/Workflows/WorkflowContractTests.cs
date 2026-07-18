@@ -57,6 +57,7 @@ public sealed class WorkflowContractTests
         Assert.Contains("ref: 01d506203763b914e237268a8746f1406423df86", workflow);
         Assert.Contains("repository: MALIEV-Co-Ltd/Maliev.MessagingContracts", workflow);
         Assert.Contains("ref: 559a00db0c7920a5247fdff60d4476ad23a9a501", workflow);
+        Assert.Equal(3, workflow.Split("/p:GITHUB_ACTIONS=false", StringSplitOptions.None).Length - 1);
         Assert.Contains("SharedSourceRoot", workflow);
         Assert.Contains("--configfile nuget.validation.config", workflow);
         Assert.Contains("$(SharedSourceRoot)", project);
