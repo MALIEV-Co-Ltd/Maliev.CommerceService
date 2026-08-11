@@ -42,7 +42,7 @@ public sealed class WorkflowContractTests
         Assert.DoesNotContain("NUGET_PASSWORD", text);
         Assert.DoesNotContain("packages: read", text);
         Assert.Contains("persist-credentials: false", text);
-        Assert.Contains("actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", text);
+        Assert.Contains("actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", text);
         Assert.Contains("actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68", text);
         AssertSafe(text);
     }
